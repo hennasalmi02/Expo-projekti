@@ -1,10 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
 
 export default function App() {
   const [number1, setNumber1] = useState("");
   const [number2, setNumber2] = useState("");
+
+  const [result, setResult] = useState(0);
 
   const sum = () => {
     return (
@@ -19,11 +21,9 @@ export default function App() {
   }
 
   return (
-    <View style={{flex: 1}}>
-      <View style={{flex: 1}}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold'}}>This is text</Text>   
-      </View>
-      <View style={{flex: 2}}>
+    <View style={styles.container}>
+      <View>
+        <Text style={{ fontSize: 18, fontWeight: 'bold'}}>{result}</Text>   
         <TextInput
         placeholder='Enter a number'
         onChangeText={number1 => setNumber1(number1)} 
@@ -33,9 +33,9 @@ export default function App() {
         onChangeText={number2 => setNumber2(number2)} 
         value={number2}/>  
       </View>
-      <View style={{flex: 1}}>
-        <Button onPress={sum} title="+" />
-        <Button onPress={difference} title="-" />
+      <View>
+        <Button onPress={result => setResult(sum)} title="+" />
+        <Button onPress={result => setResult(difference)} title="-" />
       </View>
     </View>
   );
@@ -44,6 +44,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
