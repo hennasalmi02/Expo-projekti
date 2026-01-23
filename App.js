@@ -1,41 +1,48 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
 
 export default function App() {
-  const [number1, setNumber1] = useState("");
-  const [number2, setNumber2] = useState("");
+  const [input, setInput] = useState("");
+  const [msg, setMsg] = useState("Guess a number between 1 and 100");
+  const [guesses, setGuesses] = useState(0)
 
-  const [result, setResult] = useState(0);
+  const [randomNumber, setRandomNumber] = useState(
+    Math.floor(Math.random() * 100) + 1
+  );
+  
+  const checkGuess = () => {
+    const number = Number(input);
+    const newGuesses = guesses + 1;
+    setGuesses(newGuesses);
 
-  const sum = () => {
-    return (
-      "Result: " + (parseFloat(number1) + parseFloat(number2))
-    );
-  }
-
-  const difference = () => {
-    return (
-      "Result: " + (parseFloat(number1) - parseFloat(number2))
-    );
-  }
+  
+    if (number > randomNumber) {
+      setMsg("Your guess " + number + " is too high");
+    } else if (number < randomNumber) {
+      setMsg("Your guess " + number + " is too low");
+    } else {
+      setMsg("Correct!");
+      alert("You guessed the number in " + newGuesses + " guesses");
+  
+      setRandomNumber(Math.floor(Math.random() * 100) + 1);
+      setInput("");
+      setGuesses(0);
+    }
+  };
+  
 
   return (
     <View style={styles.container}>
       <View>
-        <Text style={{ fontSize: 18, fontWeight: 'bold'}}>{result}</Text>   
+        <Text style={{ fontSize: 18, fontWeight: 'bold'}}>{msg}</Text>   
         <TextInput
         placeholder='Enter a number'
-        onChangeText={number1 => setNumber1(number1)} 
-        value={number1}/>
-        <TextInput
-        placeholder='Enter a number'
-        onChangeText={number2 => setNumber2(number2)} 
-        value={number2}/>  
+        keyboardType="numeric"
+        onChangeText={input => setInput(input)} 
+        value={input}/>
       </View>
       <View>
-        <Button onPress={result => setResult(sum)} title="+" />
-        <Button onPress={result => setResult(difference)} title="-" />
+        <Button onPress={checkGuess} title="Make guess" />
       </View>
     </View>
   );
