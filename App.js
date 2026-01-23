@@ -1,23 +1,29 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
 
 export default function App() {
   const [number1, setNumber1] = useState("");
   const [number2, setNumber2] = useState("");
 
-  const [result, setResult] = useState(0);
+  const [calc, setCalc] = useState("");
+  const [calcs, setCalcs] = useState([]);
 
-  const sum = () => {
-    return (
-      "Result: " + (parseFloat(number1) + parseFloat(number2))
-    );
+  const [result, setResult] = useState("");
+
+  const handleSum = () => {
+    const calculation = `${number1} - ${number2} = ${parseFloat(number1) - parseFloat(number2)}`;
+    setResult("Result: " + (parseFloat(number1) - parseFloat(number2)));
+    setCalcs([...calcs, { key: calculation }]);
+
+    setCalc("");
   }
 
-  const difference = () => {
-    return (
-      "Result: " + (parseFloat(number1) - parseFloat(number2))
-    );
+  const handleDifference = () => {
+    const calculation = `${number1} + ${number2} = ${parseFloat(number1) + parseFloat(number2)}`;
+    setResult("Result: " + (parseFloat(number1) + parseFloat(number2)));
+    setCalcs([...calcs, { key: calculation }]);
+
+    setCalc("");
   }
 
   return (
@@ -26,16 +32,22 @@ export default function App() {
         <Text style={{ fontSize: 18, fontWeight: 'bold'}}>{result}</Text>   
         <TextInput
         placeholder='Enter a number'
+        keyboardType="numeric"
         onChangeText={number1 => setNumber1(number1)} 
         value={number1}/>
         <TextInput
         placeholder='Enter a number'
+        keyboardType="numeric"
         onChangeText={number2 => setNumber2(number2)} 
         value={number2}/>  
       </View>
       <View>
-        <Button onPress={result => setResult(sum)} title="+" />
-        <Button onPress={result => setResult(difference)} title="-" />
+        <Button onPress={handleSum} title="+" />
+        <Button onPress={handleDifference} title="-" />
+        <FlatList 
+          data={calcs} 
+          renderItem={({item}) => <Text>{item.key}</Text>} 
+        />
       </View>
     </View>
   );
