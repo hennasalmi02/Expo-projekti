@@ -2,50 +2,33 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
 
 export default function App() {
-  const [number1, setNumber1] = useState("");
-  const [number2, setNumber2] = useState("");
 
-  const [calc, setCalc] = useState("");
-  const [calcs, setCalcs] = useState([]);
+  const [item, setItem] = useState("");
+  const [items, setItems] = useState([]);
 
-  const [result, setResult] = useState("");
-
-  const handleSum = () => {
-    const calculation = `${number1} - ${number2} = ${parseFloat(number1) - parseFloat(number2)}`;
-    setResult("Result: " + (parseFloat(number1) - parseFloat(number2)));
-    setCalcs([...calcs, { key: calculation }]);
-
-    setCalc("");
+  const handlePress = () => {
+    setItems([...items, { key: item }]);
+    setItem("");
   }
 
-  const handleDifference = () => {
-    const calculation = `${number1} + ${number2} = ${parseFloat(number1) + parseFloat(number2)}`;
-    setResult("Result: " + (parseFloat(number1) + parseFloat(number2)));
-    setCalcs([...calcs, { key: calculation }]);
-
-    setCalc("");
+  const handleClear = () => {
+    setItems([]);
   }
 
   return (
     <View style={styles.container}>
       <View>
-        <Text style={{ fontSize: 18, fontWeight: 'bold'}}>{result}</Text>   
+        <Text style={{ fontSize: 18, fontWeight: 'bold'}}>Shopping list</Text>   
         <TextInput
-        placeholder='Enter a number'
-        keyboardType="numeric"
-        onChangeText={number1 => setNumber1(number1)} 
-        value={number1}/>
-        <TextInput
-        placeholder='Enter a number'
-        keyboardType="numeric"
-        onChangeText={number2 => setNumber2(number2)} 
-        value={number2}/>  
+          placeholder='Enter an item'
+          onChangeText={text => setItem(text)} 
+          value={item}/>
       </View>
       <View>
-        <Button onPress={handleSum} title="+" />
-        <Button onPress={handleDifference} title="-" />
+        <Button onPress={handlePress} title="Add" />
+        <Button onPress={handleClear} title="Clear" />
         <FlatList 
-          data={calcs} 
+          data={items} 
           renderItem={({item}) => <Text>{item.key}</Text>} 
         />
       </View>
