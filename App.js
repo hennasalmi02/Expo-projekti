@@ -1,60 +1,55 @@
-import { useState } from 'react';
-import { View, Text, TextInput, Button, FlatList, Image } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import React from 'react';
+import { useState, useEffect } from 'react';
+import { View, Alert } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
+import stationsData from './assets/stations.json';
 
 function App() {
 
-  const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState('');
-  const [converted, setConverted] = useState('');
+  const [region, setRegion] = useState({
+    latitude: 60.200692,
+    longitude: 24.934302,
+    latitudeDelta: 0.0322,
+    longitudeDelta: 0.0221,
+  });
 
-
-  const handleFetch = () => {
-    fetch(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json`)
-      .then(response => {
-        if (!response.ok)
-          throw new Error("Error in fetch:" + response.statusText);
-        return response.json();
-      })
-      .then(data => {
-        const rate = data.eur[currency];
-        const result = parseFloat(amount) * rate;
-        setConverted(result.toFixed(2));
-      })
-      .catch(err => console.error(err));
-  }
-  
+  useEffect(() =>{
+      (async () =>{
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('No permission to get location')
+          return;
+        }
+        let currentLocation = await Location.getCurrentPositionAsync({});
+        setRegion({
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+          latitudeDelta: 0.0322,
+          longitudeDelta: 0.0221,
+        });
+      })();
+    }, []);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center' }}>
       <View style={styles.container}>
-        <Text style={{ fontSize: 24, marginBottom: 20 }}>Currency Converter</Text>
-        <TextInput
-          style={{ fontSize: 18, width: 200 }}
-          placeholder='Enter amount'
-          value={amount}
-          onChangeText={text => setAmount(text)} />
-        <Picker
-          style={{ width: 200, marginTop: 20 }}
-          selectedValue={currency}
-          pickerStyleType="dropdown"
-          onValueChange={(itemValue) => setCurrency(itemValue)}>
-          <Picker.Item label="Select currency" value="" />
-          <Picker.Item label="USD" value="usd" />
-          <Picker.Item label="GBP" value="gbp" />
-          <Picker.Item label="JPY" value="jpy" />
-          <Picker.Item label="AUD" value="aud" />
-          <Picker.Item label="CAD" value="cad" />
-          <Picker.Item label="CHF" value="chf" />
-          <Picker.Item label="CNY" value="cny" />
-          <Picker.Item label="SEK" value="sek" />
-          <Picker.Item label="NZD" value="nzd" />
-        </Picker>
-          
-      </View>
-      <View style={styles.container}>
-        <Text style={{ fontSize: 18, marginBottom: 20 }}>{converted} €</Text>
-        <Button title="Convert" onPress={handleFetch} />
+        <MapView
+          style={{ width: '100%', height: '100%' }} 
+          region={region}>
+          {stationsData.features.map((station) => (
+            <Marker
+              key={station.properties.ID}
+              coordinate={{
+              latitude: station.properties.y,
+              longitude: station.properties.x,
+            }}
+            title={station.properties.Nimi}
+            description={station.properties.Osoite}
+
+            />
+          ))}
+        </MapView>
       </View>
     </View>
   );
