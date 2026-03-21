@@ -1,93 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
-import * as SQLite from 'expo-sqlite';
+import { View, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import { app } from './firebaseConfig';
+import { getDatabase, ref, push, onValue } from "firebase/database";
 
 export default function App() {
 
-  const db = SQLite.openDatabaseSync('productdb');
-
-  const [product, setProduct] = useState("");
-  const [amount, setAmount] = useState("");
+  const database = getDatabase(app);
+  const [product, setProduct] = useState({
+  title: '',
+  amount: ''
+  });
   const [items, setItems] = useState([]);
 
-  const initialize = async () => {
-    try {
-      await db.execAsync(`
-        CREATE TABLE IF NOT EXISTS product (id INTEGER PRIMARY KEY NOT NULL, product TEXT, amount TEXT);
-      `);
-    } catch (error) {
-      console.error('Could not open database', error);
+  const handleSave = () => {
+    if (product.amount && product.title) {
+      push(ref(database, 'items/'), product);
+    }
+    else {
+      Alert.alert('Error', 'Type product and amount first');
     }
   }
 
-  useEffect(() => 
-    { initialize();
-      updateList();
-     }, []);
+  useEffect(() => {
+    const itemsRef = ref(database, 'items/');
+    onValue(itemsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setItems(Object.values(data));
+      } else {
+        setItems([]);
+      }
+    })
+  }, []);
 
-  const saveItem = async () => {
-    try {
-      await db.runAsync('INSERT INTO product (product, amount) VALUES (?, ?)', product, amount);
-      await updateList();
-    } catch (error) {
-      console.error('Could not add item', error);
+  const styles = StyleSheet.create({
+    listcontainer: {
+      padding: 10,
+      marginTop: 50
     }
-  };
+   });
 
-  const updateList = async () => {
-    try {
-      const list = await db.getAllAsync('SELECT * from product');
-      setItems(list);
-    } catch (error) {
-      console.error('Could not get items', error);
-    }
-  }
-
-  const deleteItem = async (id) => {
-    try {
-      await db.runAsync('DELETE FROM product WHERE id=?', id);
-      await updateList();
-    }
-    catch (error) {
-      console.error('Could not delete item', error);
-    }
-  }
-
-  return (
-    <View style={styles.container}>
-      <Text style={{ fontSize: 18, fontWeight: 'bold'}}>Shopping list</Text>   
+  return (  
+    <View style={styles.listcontainer}>
       <TextInput 
-        placeholder='Product' 
-        onChangeText={product => setProduct(product)}
-        value={product}/> 
+        placeholder='Product title' 
+        onChangeText={text => setProduct({...product, title: text})}
+        value={product.title}/>  
       <TextInput 
         placeholder='Amount' 
-        keyboardType='numeric' 
-        onChangeText={amount => setAmount(amount)}
-        value={amount}/> 
-      <Button onPress={saveItem} title="Save" />
-      <FlatList
-        style={{ width: '100%' }}
-        keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) =>
-        <View>
-          <Text>{item.product}</Text>
-          <Text>{item.amount} </Text>
-          <Text style={{ color: '#ff0000' }} onPress={() => deleteItem(item.id)}>bought</Text>
-        </View>
-      }
-      data={items}
-      />
+        onChangeText={text => setProduct({...product, amount: text})}
+        value={product.amount}/>   
+      <Button onPress={handleSave} title="Save" /> 
+      <FlatList 
+        renderItem={({item}) => 
+          <View style={styles.listcontainer}>
+            <Text style={{fontSize: 18}}>{item.title}, {item.amount}</Text>
+          </View>} 
+        data={items} />      
     </View>
-        
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'stretch',
-    padding: 50,
-  },
-});
